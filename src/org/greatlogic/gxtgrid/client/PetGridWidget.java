@@ -27,6 +27,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -70,7 +71,7 @@ import com.sencha.gxt.widget.core.client.grid.editing.GridInlineEditing;
 import com.sencha.gxt.widget.core.client.menu.Item;
 import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
-public abstract class PetGridWidget implements IsWidget {
+public class PetGridWidget implements IsWidget {
 //--------------------------------------------------------------------------------------------------
 private final HashSet<ColumnConfig<Pet, ?>>   _checkBoxSet;
 private TreeMap<String, ColumnConfig<Pet, ?>> _columnConfigMap;
@@ -88,7 +89,6 @@ protected PetGridWidget() {
     }
   });
   _checkBoxSet = new HashSet<ColumnConfig<Pet, ?>>();
-  loadGridColumnDefList();
   createContentPanel();
   createGrid();
   _contentPanel.add(_grid);
@@ -173,6 +173,7 @@ private ColumnConfig<Pet, Boolean> createColumnConfigBoolean(final ValueProvider
                                                              final int width, final String title) {
   final ColumnConfig<Pet, Boolean> result;
   result = new ColumnConfig<Pet, Boolean>(valueProvider, width, title);
+  result.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
   result.setCell(new CheckBoxCell());
   result.setSortable(false);
   _checkBoxSet.add(result);
@@ -234,15 +235,15 @@ private ColumnModel<Pet> createColumnModel() {
                                           HasHorizontalAlignment.ALIGN_LEFT);
   columnConfigList.add(columnConfig);
   //  _gridColumnDefList.add(new GLGridColumnDef(Pet.PetTypeId, ELookupListKey.PetTypes));
-  columnConfig = createColumnConfigString(Pet.getSexValueProvider(), 20, "Sex", //
+  columnConfig = createColumnConfigString(Pet.getSexValueProvider(), 40, "Sex", //
                                           HasHorizontalAlignment.ALIGN_CENTER);
   columnConfigList.add(columnConfig);
   columnConfig = createColumnConfigDateTime(Pet.getIntakeDateValueProvider(), 100, "Intake Date", //
                                             "dd MMM yyyy hh:mm a");
   columnConfigList.add(columnConfig);
-  columnConfig = createColumnConfigBoolean(Pet.getTrainedFlagValueProvider(), 20, "Trained?");
+  columnConfig = createColumnConfigBoolean(Pet.getTrainedFlagValueProvider(), 80, "Trained?");
   columnConfigList.add(columnConfig);
-  columnConfig = createColumnConfigBigDecimal(Pet.getAdoptionFeeValueProvider(), 80, //
+  columnConfig = createColumnConfigBigDecimal(Pet.getAdoptionFeeValueProvider(), 100, //
                                               "Adoption Fee", HasHorizontalAlignment.ALIGN_RIGHT, //
                                               true);
   columnConfigList.add(columnConfig);
@@ -421,26 +422,35 @@ public ListStore<Pet> getListStore() {
   return _petStore;
 }
 //--------------------------------------------------------------------------------------------------
-protected abstract void loadGridColumnDefList();
-//--------------------------------------------------------------------------------------------------
 private void resizeColumnToFit(final int columnIndex) {
   final ColumnConfig<Pet, ?> columnConfig = _grid.getColumnModel().getColumn(columnIndex);
-  columnConfig.getPath();
   final TextMetrics textMetrics = TextMetrics.get();
   textMetrics.bind(_grid.getView().getHeader().getAppearance().styles().head());
   int maxWidth = textMetrics.getWidth(columnConfig.getHeader().asString()) + 15; // extra is for the dropdown arrow
-  textMetrics.bind(_grid.getView().getCell(0, 1));
-  for (final Pet pet : _petStore.getAll()) {
-    final Object value = columnConfig.getValueProvider().getValue(pet);
-    if (value != null) {
-      final int width = textMetrics.getWidth(value.toString());
+  if (_petStore.size() > 0) {
+    textMetrics.bind(_grid.getView().getCell(1, 1));
+    for (final Pet pet : _petStore.getAll()) {
+      final Object value = columnConfig.getValueProvider().getValue(pet);
+      if (value != null) {
+        String valueAsString;
+        if (columnConfig.getCell() instanceof DateCell) {
+          final DateCell dateCell = (DateCell)columnConfig.getCell();
+          final SafeHtmlBuilder sb = new SafeHtmlBuilder();
+          dateCell.render(null, (Date)value, sb);
+          valueAsString = sb.toSafeHtml().asString();
+        }
+        else {
+          valueAsString = value.toString();
+        }
+        final int width = textMetrics.getWidth(valueAsString) + 12;
+        maxWidth = width > maxWidth ? width : maxWidth;
+      }
+    }
+    for (final Store<Pet>.Record record : _petStore.getModifiedRecords()) {
+      final int width = textMetrics.getWidth(record.getValue(columnConfig.getValueProvider()) //
+                                                   .toString()) + 12;
       maxWidth = width > maxWidth ? width : maxWidth;
     }
-  }
-  for (final Store<Pet>.Record record : _petStore.getModifiedRecords()) {
-    final int width = textMetrics.getWidth(record.getValue(columnConfig.getValueProvider()) //
-                                                 .toString());
-    maxWidth = width > maxWidth ? width : maxWidth;
   }
   columnConfig.setWidth(maxWidth);
   if (_checkBoxSet.contains(columnConfig)) {
