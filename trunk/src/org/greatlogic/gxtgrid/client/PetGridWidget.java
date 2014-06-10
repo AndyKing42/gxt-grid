@@ -44,6 +44,7 @@ import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
 import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 import com.sencha.gxt.widget.core.client.box.ConfirmMessageBox;
+import com.sencha.gxt.widget.core.client.box.ProgressMessageBox;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.event.ColumnWidthChangeEvent;
@@ -78,10 +79,12 @@ private TreeMap<String, ColumnConfig<Pet, ?>> _columnConfigMap;
 private ContentPanel                          _contentPanel;
 private Grid<Pet>                             _grid;
 protected ListStore<Pet>                      _petStore;
+private ListStore<PetType>                    _petTypeStore;
 private GridSelectionModel<Pet>               _selectionModel;
 //--------------------------------------------------------------------------------------------------
-protected PetGridWidget() {
+protected PetGridWidget(final ListStore<PetType> petTypeStore) {
   super();
+  _petTypeStore = petTypeStore;
   _petStore = new ListStore<Pet>(new ModelKeyProvider<Pet>() {
     @Override
     public String getKey(final Pet pet) {
@@ -111,11 +114,25 @@ private void addHeaderContextMenuHandler() {
       menuItem.addSelectionHandler(new SelectionHandler<Item>() {
         @Override
         public void onSelection(final SelectionEvent<Item> selectionEvent) {
+          final ProgressMessageBox messageBox = new ProgressMessageBox("Size All Columns", //
+                                                                       "Resizing Columns...");
+          messageBox.addDialogHideHandler(new DialogHideHandler() {
+            @Override
+            public void onDialogHide(final DialogHideEvent event) {
+              GXTGrid.info(5, "hey");
+            }
+          });
+          messageBox.setProgressText("Calculating...");
+          messageBox.show();
           final int startIndex = _selectionModel instanceof CheckBoxSelectionModel ? 1 : 0;
-          for (int columnIndex = startIndex; columnIndex < _grid.getColumnModel().getColumnCount(); ++columnIndex) {
+          final int numberOfColumns = _grid.getColumnModel().getColumnCount();
+          for (int columnIndex = startIndex; columnIndex < numberOfColumns; ++columnIndex) {
             resizeColumnToFit(columnIndex);
+            _grid.getView().refresh(true);
+            messageBox.updateProgress(columnIndex * 100.0 / numberOfColumns, "{0}% Complete");
           }
           _grid.getView().refresh(true);
+          messageBox.hide();
         }
       });
       headerContextMenuEvent.getMenu().add(menuItem);
@@ -191,16 +208,14 @@ private ColumnConfig<Pet, Date> createColumnConfigDateTime(final ValueProvider<P
   return result;
 }
 //--------------------------------------------------------------------------------------------------
-//private ColumnConfig<Pet, String> createColumnConfigForeignKey(final GLGridColumnDef gridColumnDef,
-//                                                               final IGLColumn column) {
-//  final ColumnConfig<Pet, String> result;
-//  final ValueProvider<Pet, String> valueProvider = new GLForeignKeyValueProvider(column);
-//  result = new ColumnConfig<Pet, String>(valueProvider, gridColumnDef.getWidth(), //
-//                                         column.getTitle());
-//  result.setHorizontalAlignment(gridColumnDef.getHorizontalAlignment());
-//  result.setCell(new TextCell());
-//  return result;
-//}
+private ColumnConfig<Pet, String> createColumnConfigForeignKey(final ValueProvider<Pet, String> valueProvider,
+                                                               final int width, final String title) {
+  final ColumnConfig<Pet, String> result;
+  result = new ColumnConfig<Pet, String>(valueProvider, width, title);
+  result.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+  result.setCell(new TextCell());
+  return result;
+}
 //--------------------------------------------------------------------------------------------------
 private ColumnConfig<Pet, Integer> createColumnConfigInteger(final ValueProvider<Pet, Integer> valueProvider,
                                                              final int width,
@@ -234,7 +249,9 @@ private ColumnModel<Pet> createColumnModel() {
   columnConfig = createColumnConfigString(Pet.getPetNameValueProvider(), 100, "Name", //
                                           HasHorizontalAlignment.ALIGN_LEFT);
   columnConfigList.add(columnConfig);
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.PetTypeId, ELookupListKey.PetTypes));
+  columnConfig = createColumnConfigForeignKey(Pet.getPetTypeValueProvider(_petTypeStore), 80, //
+                                              "Pet Type");
+  columnConfigList.add(columnConfig);
   columnConfig = createColumnConfigString(Pet.getSexValueProvider(), 40, "Sex", //
                                           HasHorizontalAlignment.ALIGN_CENTER);
   columnConfigList.add(columnConfig);

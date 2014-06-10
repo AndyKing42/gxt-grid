@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.data.shared.ListStore;
 
 public class Pet {
 //--------------------------------------------------------------------------------------------------
@@ -12,7 +13,7 @@ private Date       _fosterDate;
 private Date       _intakeDate;
 private final int  _petId;
 private String     _petName;
-private final int  _petTypeId;
+private int        _petTypeId;
 private String     _sex;
 protected boolean  _trained;
 //--------------------------------------------------------------------------------------------------
@@ -80,6 +81,25 @@ public static ValueProvider<Pet, String> getPetNameValueProvider() {
     @Override
     public void setValue(final Pet pet, final String value) {
       pet._petName = value;
+    }
+  };
+}
+//--------------------------------------------------------------------------------------------------
+public static ValueProvider<Pet, String> getPetTypeValueProvider(final ListStore<PetType> petTypeStore) {
+  return new ValueProvider<Pet, String>() {
+    @Override
+    public String getPath() {
+      return "Pet.PetType";
+    }
+    @Override
+    public String getValue(final Pet pet) {
+      final PetType petType = petTypeStore.findModelWithKey(Integer.toString(pet._petTypeId));
+      return petType == null ? "???" : petType.getPetTypeShortDesc();
+    }
+    @Override
+    public void setValue(final Pet pet, final String value) {
+      final PetType petType = petTypeStore.findModelWithKey(value);
+      pet._petTypeId = petType == null ? 0 : petType.getPetTypeId();
     }
   };
 }

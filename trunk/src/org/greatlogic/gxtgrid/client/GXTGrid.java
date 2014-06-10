@@ -57,14 +57,14 @@ public static void info(final int seconds, final String message) {
 //--------------------------------------------------------------------------------------------------
 @Override
 public void onModuleLoad() {
-  final PetGridWidget petGrid = new PetGridWidget();
-  RootPanel.get().add(petGrid);
   final ListStore<PetType> petTypeStore = new ListStore<PetType>(new ModelKeyProvider<PetType>() {
     @Override
     public String getKey(final PetType petType) {
       return Integer.toString(petType.getPetTypeId());
     }
   });
+  final PetGridWidget petGrid = new PetGridWidget(petTypeStore);
+  RootPanel.get().add(petGrid);
   TestData.loadPetTypeTestData(petTypeStore);
   TestData.loadPetTestData(petGrid.getListStore(), petTypeStore);
 }

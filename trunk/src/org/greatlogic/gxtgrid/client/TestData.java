@@ -44,8 +44,8 @@ public static void loadPetTestData(final ListStore<Pet> listStore,
   }
 }
 //--------------------------------------------------------------------------------------------------
-private static final String[] PetTypeDefs = new String[] {"Cat,Cat", "Dog,Dog", "Unicorn,Unicorn",
-    "IPU,Invisible Pink Unicorn"          };
+private static final String[] PetTypeDefs = new String[] {"Cat,Cat", "Dog,Dog",
+    "Hedgehog,Hedgehog", "Invisible Pink Unicorn,IPU"};
 public static void loadPetTypeTestData(final ListStore<PetType> listStore) {
   listStore.clear();
   int nextPetTypeId = 1;

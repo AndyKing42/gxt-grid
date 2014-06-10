@@ -12,8 +12,16 @@ public PetType(final int petTypeId, final String petTypeDesc, final String petTy
   _petTypeShortDesc = petTypeShortDesc;
 }
 //--------------------------------------------------------------------------------------------------
+public String getPetTypeDesc() {
+  return _petTypeDesc;
+}
+//--------------------------------------------------------------------------------------------------
 public int getPetTypeId() {
   return _petTypeId;
+}
+//--------------------------------------------------------------------------------------------------
+public String getPetTypeShortDesc() {
+  return _petTypeShortDesc;
 }
 //--------------------------------------------------------------------------------------------------
 }
