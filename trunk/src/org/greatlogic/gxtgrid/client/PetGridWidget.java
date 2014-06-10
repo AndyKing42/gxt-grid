@@ -24,7 +24,6 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
@@ -37,8 +36,6 @@ import com.sencha.gxt.cell.core.client.form.CheckBoxCell;
 import com.sencha.gxt.core.client.IdentityValueProvider;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.util.TextMetrics;
-import com.sencha.gxt.data.shared.Converter;
-import com.sencha.gxt.data.shared.LabelProvider;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.Store;
@@ -59,11 +56,8 @@ import com.sencha.gxt.widget.core.client.event.RowClickEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.BigDecimalField;
-import com.sencha.gxt.widget.core.client.form.ComboBox;
 import com.sencha.gxt.widget.core.client.form.DateField;
 import com.sencha.gxt.widget.core.client.form.DateTimePropertyEditor;
-import com.sencha.gxt.widget.core.client.form.IntegerField;
-import com.sencha.gxt.widget.core.client.form.IsField;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.CheckBoxSelectionModel;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
@@ -78,16 +72,15 @@ import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public abstract class PetGridWidget implements IsWidget {
 //--------------------------------------------------------------------------------------------------
-private final HashSet<ColumnConfig<Pet, ?>> _checkBoxSet;
-private ContentPanel                        _contentPanel;
-private Grid<Pet>                           _grid;
-private final String                        _noRowsMessage;
-protected ListStore<Pet>                    _petStore;
-private GridSelectionModel<Pet>             _selectionModel;
+private final HashSet<ColumnConfig<Pet, ?>>   _checkBoxSet;
+private TreeMap<String, ColumnConfig<Pet, ?>> _columnConfigMap;
+private ContentPanel                          _contentPanel;
+private Grid<Pet>                             _grid;
+protected ListStore<Pet>                      _petStore;
+private GridSelectionModel<Pet>               _selectionModel;
 //--------------------------------------------------------------------------------------------------
-protected PetGridWidget(final String headingText, final String noRowsMessage) {
+protected PetGridWidget() {
   super();
-  _noRowsMessage = noRowsMessage == null ? "There are no results to display" : noRowsMessage;
   _petStore = new ListStore<Pet>(new ModelKeyProvider<Pet>() {
     @Override
     public String getKey(final Pet pet) {
@@ -96,8 +89,7 @@ protected PetGridWidget(final String headingText, final String noRowsMessage) {
   });
   _checkBoxSet = new HashSet<ColumnConfig<Pet, ?>>();
   loadGridColumnDefList();
-  createGridColumnDefMap();
-  createContentPanel(headingText);
+  createContentPanel();
   createGrid();
   _contentPanel.add(_grid);
 }
@@ -198,24 +190,24 @@ private ColumnConfig<Pet, Date> createColumnConfigDateTime(final ValueProvider<P
   return result;
 }
 //--------------------------------------------------------------------------------------------------
-private ColumnConfig<Pet, String> createColumnConfigForeignKey(final GLGridColumnDef gridColumnDef,
-                                                               final IGLColumn column) {
-  final ColumnConfig<Pet, String> result;
-  final ValueProvider<Pet, String> valueProvider = new GLForeignKeyValueProvider(column);
-  result = new ColumnConfig<Pet, String>(valueProvider, gridColumnDef.getWidth(), //
-                                         column.getTitle());
-  result.setHorizontalAlignment(gridColumnDef.getHorizontalAlignment());
-  result.setCell(new TextCell());
-  return result;
-}
+//private ColumnConfig<Pet, String> createColumnConfigForeignKey(final GLGridColumnDef gridColumnDef,
+//                                                               final IGLColumn column) {
+//  final ColumnConfig<Pet, String> result;
+//  final ValueProvider<Pet, String> valueProvider = new GLForeignKeyValueProvider(column);
+//  result = new ColumnConfig<Pet, String>(valueProvider, gridColumnDef.getWidth(), //
+//                                         column.getTitle());
+//  result.setHorizontalAlignment(gridColumnDef.getHorizontalAlignment());
+//  result.setCell(new TextCell());
+//  return result;
+//}
 //--------------------------------------------------------------------------------------------------
-private ColumnConfig<Pet, Integer> createColumnConfigInteger(final GLGridColumnDef gridColumnDef,
-                                                             final IGLColumn column) {
+private ColumnConfig<Pet, Integer> createColumnConfigInteger(final ValueProvider<Pet, Integer> valueProvider,
+                                                             final int width,
+                                                             final String title,
+                                                             final HorizontalAlignmentConstant horizontalAlignment) {
   final ColumnConfig<Pet, Integer> result;
-  final ValueProvider<Pet, Integer> valueProvider = new GLIntegerValueProvider(column);
-  result = new ColumnConfig<Pet, Integer>(valueProvider, gridColumnDef.getWidth(), //
-                                          column.getTitle());
-  result.setHorizontalAlignment(gridColumnDef.getHorizontalAlignment());
+  result = new ColumnConfig<Pet, Integer>(valueProvider, width, title);
+  result.setHorizontalAlignment(horizontalAlignment);
   result.setCell(new NumberCell<Integer>());
   return result;
 }
@@ -233,92 +225,54 @@ private ColumnConfig<Pet, String> createColumnConfigString(final ValueProvider<P
 //--------------------------------------------------------------------------------------------------
 private ColumnModel<Pet> createColumnModel() {
   ColumnModel<Pet> result;
-  final ArrayList<ColumnConfig<Pet, ?>> columnConfigList;
-  columnConfigList = new ArrayList<ColumnConfig<Pet, ?>>();
+  final ArrayList<ColumnConfig<Pet, ?>> columnConfigList = new ArrayList<ColumnConfig<Pet, ?>>();
   if (_selectionModel instanceof CheckBoxSelectionModel) {
     columnConfigList.add(((CheckBoxSelectionModel<Pet>)_selectionModel).getColumn());
   }
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.PetName));
+  ColumnConfig<Pet, ?> columnConfig;
+  columnConfig = createColumnConfigString(Pet.getPetNameValueProvider(), 100, "Name", //
+                                          HasHorizontalAlignment.ALIGN_LEFT);
+  columnConfigList.add(columnConfig);
   //  _gridColumnDefList.add(new GLGridColumnDef(Pet.PetTypeId, ELookupListKey.PetTypes));
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.Sex));
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.IntakeDate));
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.TrainedFlag));
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.AdoptionFee));
-  //  _gridColumnDefList.add(new GLGridColumnDef(Pet.FosterDate));
-
-  columnConfigList.add(createColumnConfigString(Pet.getPetNameValueProvider(), 100, "Name",
-                                                HasHorizontalAlignment.ALIGN_LEFT));
-  columnConfigList.add(createColumnConfigString(Pet.getSexValueProvider(), 20, "Sex",
-                                                HasHorizontalAlignment.ALIGN_CENTER));
-  columnConfigList.add(createColumnConfigDateTime(Pet.getIntakeDateValueProvider(), 100,
-                                                  "Intake Date", "dd MMM yyyy hh:mm a"));
-  columnConfigList.add(createColumnConfigBoolean(Pet.getTrainedFlagValueProvider(), 20, "Trained?"));
-  columnConfigList.add(createColumnConfigBigDecimal(Pet.getAdoptionFeeValueProvider(), 80,
-                                                    "Adoption Fee",
-                                                    HasHorizontalAlignment.ALIGN_RIGHT, true));
-
-  for (final GLGridColumnDef gridColumnDef : _gridColumnDefList) {
-    ColumnConfig<Pet, ?> columnConfig = null;
-    final IGLColumn column = gridColumnDef.getColumn();
-    switch (column.getDataType()) {
-      case Boolean:
-        columnConfig = createColumnConfigBoolean(gridColumnDef, column);
-        break;
-      case Currency:
-        columnConfig = createColumnConfigBigDecimal(gridColumnDef, column);
-        break;
-      case Date:
-        columnConfig = createColumnConfigDateTime(gridColumnDef, column, "dd MMM yyyy");
-        break;
-      case DateTime:
-        columnConfig = createColumnConfigDateTime(gridColumnDef, column, "dd MMM yyyy hh:mm a");
-        break;
-      case Decimal:
-        columnConfig = createColumnConfigBigDecimal(gridColumnDef, column);
-        break;
-      case Int:
-        if (column.getParentTable() == null) {
-          columnConfig = createColumnConfigInteger(gridColumnDef, column);
-        }
-        else {
-          columnConfig = createColumnConfigForeignKey(gridColumnDef, column);
-        }
-        break;
-      case String:
-        columnConfig = createColumnConfigString(gridColumnDef, column);
-        break;
-    }
-    if (columnConfig != null) {
-      gridColumnDef.setColumnConfig(columnConfig, columnConfigList.size());
-      columnConfigList.add(columnConfig);
-    }
+  columnConfig = createColumnConfigString(Pet.getSexValueProvider(), 20, "Sex", //
+                                          HasHorizontalAlignment.ALIGN_CENTER);
+  columnConfigList.add(columnConfig);
+  columnConfig = createColumnConfigDateTime(Pet.getIntakeDateValueProvider(), 100, "Intake Date", //
+                                            "dd MMM yyyy hh:mm a");
+  columnConfigList.add(columnConfig);
+  columnConfig = createColumnConfigBoolean(Pet.getTrainedFlagValueProvider(), 20, "Trained?");
+  columnConfigList.add(columnConfig);
+  columnConfig = createColumnConfigBigDecimal(Pet.getAdoptionFeeValueProvider(), 80, //
+                                              "Adoption Fee", HasHorizontalAlignment.ALIGN_RIGHT, //
+                                              true);
+  columnConfigList.add(columnConfig);
+  columnConfig = createColumnConfigDateTime(Pet.getFosterDateValueProvider(), 100, "Foster Date", //
+                                            "dd MMM yyyy");
+  columnConfigList.add(columnConfig);
+  _columnConfigMap = new TreeMap<String, ColumnConfig<Pet, ?>>();
+  for (final ColumnConfig<Pet, ?> petColumnConfig : columnConfigList) {
+    _columnConfigMap.put(petColumnConfig.getPath(), petColumnConfig);
   }
   result = new ColumnModel<Pet>(columnConfigList);
   result.addColumnWidthChangeHandler(new ColumnWidthChangeHandler() {
     @Override
     public void onColumnWidthChange(final ColumnWidthChangeEvent event) {
-      final ColumnConfig<Pet, ?> columnConfig = columnConfigList.get(event.getIndex());
-      if (_checkBoxSet.contains(columnConfig)) {
-        centerCheckBox(columnConfig);
+      final ColumnConfig<Pet, ?> petColumnConfig = columnConfigList.get(event.getIndex());
+      if (_checkBoxSet.contains(petColumnConfig)) {
+        centerCheckBox(petColumnConfig);
         _grid.getView().refresh(true);
       }
     }
   });
-  for (final ColumnConfig<Pet, ?> columnConfig : _checkBoxSet) {
-    centerCheckBox(columnConfig);
+  for (final ColumnConfig<Pet, ?> checkBoxColumnConfig : _checkBoxSet) {
+    centerCheckBox(checkBoxColumnConfig);
   }
   return result;
 }
 //--------------------------------------------------------------------------------------------------
-private void createContentPanel(final String headingText) {
+private void createContentPanel() {
   _contentPanel = new ContentPanel();
-  if (GLUtil.isBlank(headingText)) {
-    _contentPanel.setHeaderVisible(false);
-  }
-  else {
-    _contentPanel.setHeaderVisible(true);
-    _contentPanel.setHeadingText(headingText);
-  }
+  _contentPanel.setHeaderVisible(false);
   _contentPanel.setButtonAlign(BoxLayoutPack.START);
   _contentPanel.addButton(new TextButton("Reset", new SelectHandler() {
     @Override
@@ -340,19 +294,19 @@ private TextButton createContentPanelDeleteButton() {
   return new TextButton("Delete Selected", new SelectHandler() {
     @Override
     public void onSelect(final SelectEvent selectEvent) {
-      final List<Pet> selectedRecordList = _selectionModel.getSelectedItems();
-      if (selectedRecordList.size() == 0) {
+      final List<Pet> petList = _selectionModel.getSelectedItems();
+      if (petList.size() == 0) {
         final AlertMessageBox messageBox;
         messageBox = new AlertMessageBox("Delete Rows", "You haven't selected any rows to delete");
         messageBox.show();
         return;
       }
       final String rowMessage;
-      if (selectedRecordList.size() == 1) {
+      if (petList.size() == 1) {
         rowMessage = "this row";
       }
       else {
-        rowMessage = "these " + selectedRecordList.size() + " rows";
+        rowMessage = "these " + petList.size() + " rows";
       }
       final ConfirmMessageBox messageBox;
       messageBox = new ConfirmMessageBox("Delete Rows", //
@@ -361,12 +315,9 @@ private TextButton createContentPanelDeleteButton() {
         @Override
         public void onDialogHide(final DialogHideEvent hideEvent) {
           if (hideEvent.getHideButton() == PredefinedButton.YES) {
-            final ArrayList<Pet> recordList;
-            recordList = new ArrayList<Pet>(selectedRecordList.size());
-            for (final Pet record : selectedRecordList) {
-              recordList.add(record);
+            for (final Pet pet : petList) {
+              _petStore.remove(pet);
             }
-            _petStore.remove(recordList);
           }
         }
       });
@@ -378,102 +329,62 @@ private TextButton createContentPanelDeleteButton() {
 @SuppressWarnings("unchecked")
 private void createEditors() {
   final GridEditing<Pet> gridEditing = new GridInlineEditing<Pet>(_grid);
-  for (final GLGridColumnDef gridColumnDef : _gridColumnDefList) {
-    final ColumnConfig<Pet, ?> columnConfig = gridColumnDef.getColumnConfig();
-    final IGLColumn column = gridColumnDef.getColumn();
-    switch (column.getDataType()) {
-      case Boolean:
-        // no editor is needed - the checkbox can be changed in place
-        break;
-      case Currency:
-        gridEditing.addEditor((ColumnConfig<Pet, BigDecimal>)columnConfig, new BigDecimalField());
-        break;
-      case Date: {
-        final DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat("MM/dd/yyyy");
-        final DateTimePropertyEditor propertyEditor = new DateTimePropertyEditor(dateTimeFormat);
-        final DateField dateField = new DateField(propertyEditor);
-        dateField.setClearValueOnParseError(false);
-        gridEditing.addEditor((ColumnConfig<Pet, Date>)columnConfig, dateField);
-        final IsField<Date> editor = gridEditing.getEditor(columnConfig);
-        if (editor == null) {
-          GLUtil.initialize();
-        }
-        break;
-      }
-      case DateTime: {
-        /*
-         * In 3, I'd probably start by making an Editor instance with two sub-editors, one DateField
-         * and one TimeField, each using @Path("") to have them bind to the same value.
-         * 
-         * Or make the new class implement IsField, and use setValue() and getValue() to modify/read
-         * both sub-editors.
-         * 
-         * IsField is what is being used in 3 to replace most MultiField cases - it allows a widget
-         * to supply methods that are helpful for most fields, and as it extends LeafValueEditor, it
-         * can be used in GWT Editor framework, and subfields will be ignored, leaving the dev to
-         * write their own logic for binding the values.
-         */
-        final DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_LONG);
-        final DateTimePropertyEditor propertyEditor = new DateTimePropertyEditor(dateTimeFormat);
-        final DateField dateField = new DateField(propertyEditor);
-        dateField.setClearValueOnParseError(false);
-        gridEditing.addEditor((ColumnConfig<Pet, Date>)columnConfig, dateField);
-        break;
-      }
-      case Decimal:
-        gridEditing.addEditor((ColumnConfig<Pet, BigDecimal>)columnConfig, new BigDecimalField());
-        break;
-      case Int:
-        if (column.getParentTable() == null) {
-          gridEditing.addEditor((ColumnConfig<Pet, Integer>)columnConfig, new IntegerField());
-        }
-        else {
-          createEditorsForeignKeyCombobox(gridEditing, gridColumnDef);
-        }
-        break;
-      case String:
-        gridEditing.addEditor((ColumnConfig<Pet, String>)columnConfig, new TextField());
-        break;
-    }
-  }
+  gridEditing.addEditor((ColumnConfig<Pet, String>)(_columnConfigMap.get("Pet.PetName")),
+                        new TextField());
+  gridEditing.addEditor((ColumnConfig<Pet, String>)(_columnConfigMap.get("Pet.Sex")),
+                        new TextField());
+  DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat("MM/dd/yyyy hh:mm a");
+  DateTimePropertyEditor propertyEditor = new DateTimePropertyEditor(dateTimeFormat);
+  DateField dateField = new DateField(propertyEditor);
+  dateField.setClearValueOnParseError(false);
+  gridEditing.addEditor((ColumnConfig<Pet, Date>)(_columnConfigMap.get("Pet.IntakeDate")),
+                        dateField);
+  gridEditing.addEditor((ColumnConfig<Pet, BigDecimal>)(_columnConfigMap.get("Pet.AdoptionFee")),
+                        new BigDecimalField());
+  dateTimeFormat = DateTimeFormat.getFormat("MM/dd/yyyy");
+  propertyEditor = new DateTimePropertyEditor(dateTimeFormat);
+  dateField = new DateField(propertyEditor);
+  dateField.setClearValueOnParseError(false);
+  gridEditing.addEditor((ColumnConfig<Pet, Date>)(_columnConfigMap.get("Pet.FosterDate")),
+                        dateField);
 }
 //--------------------------------------------------------------------------------------------------
-@SuppressWarnings("unchecked")
-private void createEditorsForeignKeyCombobox(final GridEditing<Pet> gridEditing,
-                                             final GLGridColumnDef gridColumnDef) {
-  final IGLColumn column = gridColumnDef.getColumn();
-  final IGLLookupListStoreKey lookupListStoreKey = gridColumnDef.getLookupListStoreKey();
-  final ListStore<Pet> lookupListStore = getLookupListStore(lookupListStoreKey);
-  if (lookupListStore == null) {
-    GLUtil.info(10, "Lookup list store not found for column:" + column + " key" +
-                    lookupListStoreKey);
-    return;
-  }
-  final LabelProvider<Pet> labelProvider = new LabelProvider<Pet>() {
-    @Override
-    public String getLabel(final Pet record) {
-      try {
-        return record.asString(column.getParentDisplayColumn());
-      }
-      catch (final GLInvalidFieldOrColumnException e) {
-        return "???";
-      }
-    }
-  };
-  final ComboBox<Pet> comboBox = new ComboBox<Pet>(lookupListStore, labelProvider);
-  final Converter<String, Pet> converter = new Converter<String, Pet>() {
-    @Override
-    public Pet convertModelValue(final String displayValue) {
-      return getRecordForLookupValue(lookupListStoreKey, displayValue);
-    }
-    @Override
-    public String convertFieldValue(final Pet record) {
-      return "Cat";
-    }
-  };
-  gridEditing.addEditor((ColumnConfig<Pet, String>)gridColumnDef.getColumnConfig(), converter,
-                        comboBox);
-}
+//@SuppressWarnings("unchecked")
+//private void createEditorsForeignKeyCombobox(final GridEditing<Pet> gridEditing,
+//                                             final GLGridColumnDef gridColumnDef) {
+//  final IGLColumn column = gridColumnDef.getColumn();
+//  final IGLLookupListStoreKey lookupListStoreKey = gridColumnDef.getLookupListStoreKey();
+//  final ListStore<Pet> lookupListStore = getLookupListStore(lookupListStoreKey);
+//  if (lookupListStore == null) {
+//    GLUtil.info(10, "Lookup list store not found for column:" + column + " key" +
+//                    lookupListStoreKey);
+//    return;
+//  }
+//  final LabelProvider<Pet> labelProvider = new LabelProvider<Pet>() {
+//    @Override
+//    public String getLabel(final Pet record) {
+//      try {
+//        return record.asString(column.getParentDisplayColumn());
+//      }
+//      catch (final GLInvalidFieldOrColumnException e) {
+//        return "???";
+//      }
+//    }
+//  };
+//  final ComboBox<Pet> comboBox = new ComboBox<Pet>(lookupListStore, labelProvider);
+//  final Converter<String, Pet> converter = new Converter<String, Pet>() {
+//    @Override
+//    public Pet convertModelValue(final String displayValue) {
+//      return getRecordForLookupValue(lookupListStoreKey, displayValue);
+//    }
+//    @Override
+//    public String convertFieldValue(final Pet record) {
+//      return "Cat";
+//    }
+//  };
+//  gridEditing.addEditor((ColumnConfig<Pet, String>)gridColumnDef.getColumnConfig(), converter,
+//                        comboBox);
+//}
 //--------------------------------------------------------------------------------------------------
 private void createGrid() {
   createCheckBoxSelectionModel();
@@ -497,17 +408,10 @@ private void createGrid() {
   createEditors();
 }
 //--------------------------------------------------------------------------------------------------
-private void createGridColumnDefMap() {
-  _gridColumnDefMap = new TreeMap<String, GLGridColumnDef>();
-  for (final GLGridColumnDef gridColumnDef : _gridColumnDefList) {
-    _gridColumnDefMap.put(gridColumnDef.getColumn().toString(), gridColumnDef);
-  }
-}
-//--------------------------------------------------------------------------------------------------
 private GridView<Pet> createGridView() {
   final GridView<Pet> result = new GridView<Pet>();
   result.setColumnLines(true);
-  result.setEmptyText(_noRowsMessage);
+  result.setEmptyText("There are no results to display");
   result.setForceFit(false);
   result.setStripeRows(true);
   return result;
@@ -517,34 +421,21 @@ public ListStore<Pet> getListStore() {
   return _petStore;
 }
 //--------------------------------------------------------------------------------------------------
-public ListStore<Pet> getLookupListStore(final IGLLookupListStoreKey lookupListStoreKey) {
-  return null;
-}
-//--------------------------------------------------------------------------------------------------
-public Pet getRecordForLookupValue(final IGLLookupListStoreKey lookupListStoreKey,
-                                   final String value) {
-  return null;
-}
-//--------------------------------------------------------------------------------------------------
 protected abstract void loadGridColumnDefList();
 //--------------------------------------------------------------------------------------------------
 private void resizeColumnToFit(final int columnIndex) {
   final ColumnConfig<Pet, ?> columnConfig = _grid.getColumnModel().getColumn(columnIndex);
-  final GLGridColumnDef gridColumnDef = _gridColumnDefMap.get(columnConfig.getPath());
+  columnConfig.getPath();
   final TextMetrics textMetrics = TextMetrics.get();
   textMetrics.bind(_grid.getView().getHeader().getAppearance().styles().head());
   int maxWidth = textMetrics.getWidth(columnConfig.getHeader().asString()) + 15; // extra is for the dropdown arrow
   textMetrics.bind(_grid.getView().getCell(0, 1));
-  final IGLColumn column = gridColumnDef.getColumn();
-  try {
-    for (final Pet record : _petStore.getAll()) {
-      int width;
-      width = textMetrics.getWidth(record.asString(column));
+  for (final Pet pet : _petStore.getAll()) {
+    final Object value = columnConfig.getValueProvider().getValue(pet);
+    if (value != null) {
+      final int width = textMetrics.getWidth(value.toString());
       maxWidth = width > maxWidth ? width : maxWidth;
     }
-  }
-  catch (final GLInvalidFieldOrColumnException ifoce) {
-    //
   }
   for (final Store<Pet>.Record record : _petStore.getModifiedRecords()) {
     final int width = textMetrics.getWidth(record.getValue(columnConfig.getValueProvider()) //

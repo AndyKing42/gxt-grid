@@ -8,6 +8,7 @@ import com.sencha.gxt.core.client.ValueProvider;
 public class Pet {
 //--------------------------------------------------------------------------------------------------
 private BigDecimal _adoptionFee;
+private Date       _fosterDate;
 private Date       _intakeDate;
 private int        _petId;
 private String     _petName;
@@ -31,6 +32,23 @@ public static ValueProvider<Pet, BigDecimal> getAdoptionFeeValueProvider() {
     @Override
     public void setValue(final Pet pet, final BigDecimal value) {
       pet._adoptionFee = value.setScale(2, RoundingMode.HALF_UP);
+    }
+  };
+}
+//--------------------------------------------------------------------------------------------------
+public static ValueProvider<Pet, Date> getFosterDateValueProvider() {
+  return new ValueProvider<Pet, Date>() {
+    @Override
+    public String getPath() {
+      return "Pet.FosterDate";
+    }
+    @Override
+    public Date getValue(final Pet pet) {
+      return pet._fosterDate;
+    }
+    @Override
+    public void setValue(final Pet pet, final Date value) {
+      pet._fosterDate = value;
     }
   };
 }
