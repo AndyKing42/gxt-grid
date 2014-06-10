@@ -10,14 +10,11 @@ public class Pet {
 private BigDecimal _adoptionFee;
 private Date       _fosterDate;
 private Date       _intakeDate;
-private int        _petId;
+private final int  _petId;
 private String     _petName;
+private final int  _petTypeId;
 private String     _sex;
-protected boolean  _trainedFlag;
-//--------------------------------------------------------------------------------------------------
-public int getPetId() {
-  return _petId;
-}
+protected boolean  _trained;
 //--------------------------------------------------------------------------------------------------
 public static ValueProvider<Pet, BigDecimal> getAdoptionFeeValueProvider() {
   return new ValueProvider<Pet, BigDecimal>() {
@@ -112,13 +109,30 @@ public static ValueProvider<Pet, Boolean> getTrainedFlagValueProvider() {
     }
     @Override
     public Boolean getValue(final Pet pet) {
-      return pet._trainedFlag;
+      return pet._trained;
     }
     @Override
     public void setValue(final Pet pet, final Boolean value) {
-      pet._trainedFlag = value;
+      pet._trained = value;
     }
   };
+}
+//--------------------------------------------------------------------------------------------------
+public Pet(final int petId, final String petName, final int petTypeId, final String sex,
+           final boolean trained, final Date intakeDate, final Date fosterDate,
+           final BigDecimal adoptionFee) {
+  _petId = petId;
+  _petName = petName;
+  _petTypeId = petTypeId;
+  _sex = sex;
+  _trained = trained;
+  _intakeDate = intakeDate;
+  _fosterDate = fosterDate;
+  _adoptionFee = adoptionFee.setScale(2, RoundingMode.HALF_UP);
+}
+//--------------------------------------------------------------------------------------------------
+public int getPetId() {
+  return _petId;
 }
 //--------------------------------------------------------------------------------------------------
 }
