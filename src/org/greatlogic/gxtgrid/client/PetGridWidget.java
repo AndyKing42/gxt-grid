@@ -114,25 +114,38 @@ private void addHeaderContextMenuHandler() {
       menuItem.addSelectionHandler(new SelectionHandler<Item>() {
         @Override
         public void onSelection(final SelectionEvent<Item> selectionEvent) {
-          final ProgressMessageBox messageBox = new ProgressMessageBox("Size All Columns", //
-                                                                       "Resizing Columns...");
-          messageBox.addDialogHideHandler(new DialogHideHandler() {
-            @Override
-            public void onDialogHide(final DialogHideEvent event) {
-              GXTGrid.info(5, "hey");
-            }
-          });
+          final ProgressMessageBox messageBox = new ProgressMessageBox("Task Description", //
+                                                                       "Executing Task...");
           messageBox.setProgressText("Calculating...");
+          messageBox.setPredefinedButtons();
           messageBox.show();
-          final int startIndex = _selectionModel instanceof CheckBoxSelectionModel ? 1 : 0;
-          final int numberOfColumns = _grid.getColumnModel().getColumnCount();
-          for (int columnIndex = startIndex; columnIndex < numberOfColumns; ++columnIndex) {
-            resizeColumnToFit(columnIndex);
-            _grid.getView().refresh(true);
-            messageBox.updateProgress(columnIndex * 100.0 / numberOfColumns, "{0}% Complete");
+          for (int i = 0; i < 5; ++i) {
+            for (long l = 0l; l < 10000000000l; ++l) {
+              if (l == 12345l) {
+                GXTGrid.info(60, "" + System.currentTimeMillis() / 1000);
+              }
+            }
+            messageBox.updateProgress((double)(i + 1) / 5, "{0}% Complete");
           }
           _grid.getView().refresh(true);
-          messageBox.hide();
+          //              messageBox.hide();
+          //          final ProgressMessageBox messageBox = new ProgressMessageBox("Size All Columns", //
+          //                                                                       "Resizing Columns...");
+          //          messageBox.setProgressText("Calculating...");
+          //          messageBox.show();
+          //          final int startIndex = _selectionModel instanceof CheckBoxSelectionModel ? 1 : 0;
+          //          final int numberOfColumns = _grid.getColumnModel().getColumnCount();
+          //          for (int columnIndex = startIndex; columnIndex < numberOfColumns; ++columnIndex) {
+          //            //            resizeColumnToFit(columnIndex);
+          //            for (long l = 0l; l < 10000000000l; ++l) {
+          //              if (l == 12345l) {
+          //                GXTGrid.info(60, "" + System.currentTimeMillis() / 1000);
+          //              }
+          //            }
+          //            messageBox.updateProgress((double)columnIndex / numberOfColumns, "{0}% Complete");
+          //          }
+          //          _grid.getView().refresh(true);
+          //          //              messageBox.hide();
         }
       });
       headerContextMenuEvent.getMenu().add(menuItem);
