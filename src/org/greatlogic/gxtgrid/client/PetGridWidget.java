@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.TreeMap;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -114,38 +116,13 @@ private void addHeaderContextMenuHandler() {
       menuItem.addSelectionHandler(new SelectionHandler<Item>() {
         @Override
         public void onSelection(final SelectionEvent<Item> selectionEvent) {
-          final ProgressMessageBox messageBox = new ProgressMessageBox("Task Description", //
-                                                                       "Executing Task...");
+          final ProgressMessageBox messageBox = new ProgressMessageBox("Size All Columns", //
+                                                                       "Resizing Columns...");
           messageBox.setProgressText("Calculating...");
-          messageBox.setPredefinedButtons();
+          //          messageBox.setPredefinedButtons();
           messageBox.show();
-          for (int i = 0; i < 5; ++i) {
-            for (long l = 0l; l < 10000000000l; ++l) {
-              if (l == 12345l) {
-                GXTGrid.info(60, "" + System.currentTimeMillis() / 1000);
-              }
-            }
-            messageBox.updateProgress((double)(i + 1) / 5, "{0}% Complete");
-          }
-          _grid.getView().refresh(true);
-          //              messageBox.hide();
-          //          final ProgressMessageBox messageBox = new ProgressMessageBox("Size All Columns", //
-          //                                                                       "Resizing Columns...");
-          //          messageBox.setProgressText("Calculating...");
-          //          messageBox.show();
-          //          final int startIndex = _selectionModel instanceof CheckBoxSelectionModel ? 1 : 0;
-          //          final int numberOfColumns = _grid.getColumnModel().getColumnCount();
-          //          for (int columnIndex = startIndex; columnIndex < numberOfColumns; ++columnIndex) {
-          //            //            resizeColumnToFit(columnIndex);
-          //            for (long l = 0l; l < 10000000000l; ++l) {
-          //              if (l == 12345l) {
-          //                GXTGrid.info(60, "" + System.currentTimeMillis() / 1000);
-          //              }
-          //            }
-          //            messageBox.updateProgress((double)columnIndex / numberOfColumns, "{0}% Complete");
-          //          }
-          //          _grid.getView().refresh(true);
-          //          //              messageBox.hide();
+          resizeNextColumn(messageBox, _selectionModel instanceof CheckBoxSelectionModel ? 1 : 0,
+                           _grid.getColumnModel().getColumnCount() - 1);
         }
       });
       headerContextMenuEvent.getMenu().add(menuItem);
@@ -486,6 +463,23 @@ private void resizeColumnToFit(final int columnIndex) {
   if (_checkBoxSet.contains(columnConfig)) {
     centerCheckBox(columnConfig);
   }
+}
+//--------------------------------------------------------------------------------------------------
+private void resizeNextColumn(final ProgressMessageBox messageBox, final int columnIndex,
+                              final int lastColumnIndex) {
+  Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+    @Override
+    public void execute() {
+      resizeColumnToFit(columnIndex);
+      if (columnIndex == lastColumnIndex) {
+        messageBox.hide();
+        _grid.getView().refresh(true);
+        return;
+      }
+      messageBox.updateProgress((double)columnIndex / (lastColumnIndex + 1), "{0}% Complete");
+      resizeNextColumn(messageBox, columnIndex + 1, lastColumnIndex);
+    }
+  });
 }
 //--------------------------------------------------------------------------------------------------
 }
