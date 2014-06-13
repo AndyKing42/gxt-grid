@@ -13,12 +13,14 @@ package org.greatlogic.gxtgrid.client;
  * the License.
  */
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
+import org.greatlogic.gxtgrid.client.AbstractGridEditingExample.Light;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.Scheduler;
@@ -36,12 +38,15 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.cell.core.client.NumberCell;
 import com.sencha.gxt.cell.core.client.form.CheckBoxCell;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.IdentityValueProvider;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.util.TextMetrics;
+import com.sencha.gxt.data.shared.Converter;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.Store;
+import com.sencha.gxt.data.shared.StringLabelProvider;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
 import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
@@ -62,6 +67,8 @@ import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.BigDecimalField;
 import com.sencha.gxt.widget.core.client.form.DateField;
 import com.sencha.gxt.widget.core.client.form.DateTimePropertyEditor;
+import com.sencha.gxt.widget.core.client.form.PropertyEditor;
+import com.sencha.gxt.widget.core.client.form.SimpleComboBox;
 import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.CheckBoxSelectionModel;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
@@ -339,6 +346,7 @@ private void createEditors() {
   final GridEditing<Pet> gridEditing = new GridInlineEditing<Pet>(_grid);
   gridEditing.addEditor((ColumnConfig<Pet, String>)(_columnConfigMap.get("Pet.PetName")),
                         new TextField());
+  createEditorsPetType(gridEditing);
   gridEditing.addEditor((ColumnConfig<Pet, String>)(_columnConfigMap.get("Pet.Sex")),
                         new TextField());
   DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat("MM/dd/yyyy hh:mm a");
@@ -355,6 +363,46 @@ private void createEditors() {
   dateField.setClearValueOnParseError(false);
   gridEditing.addEditor((ColumnConfig<Pet, Date>)(_columnConfigMap.get("Pet.FosterDate")),
                         dateField);
+}
+//--------------------------------------------------------------------------------------------------
+private void createEditorsPetType(final GridEditing<Pet> gridEditing) {
+  final SimpleComboBox<Light> comboBox =
+                                         new SimpleComboBox<Light>(new StringLabelProvider<Light>());
+  comboBox.setClearValueOnParseError(false);
+  comboBox.setPropertyEditor(new PropertyEditor<Light>() {
+    @Override
+    public Light parse(final CharSequence text) throws ParseException {
+      return Light.parseString(text.toString());
+    }
+    @Override
+    public String render(final Light object) {
+      return object == null ? Light.SUNNY.toString() : object.toString();
+    }
+  });
+  comboBox.setTriggerAction(TriggerAction.ALL);
+  comboBox.add(Light.SUNNY);
+  comboBox.add(Light.MOSTLYSUNNY);
+  comboBox.add(Light.SUNORSHADE);
+  comboBox.add(Light.MOSTLYSHADY);
+  comboBox.add(Light.SHADE);
+  // combo.setForceSelection(true);
+  final Converter<String, Light> converter = new Converter<String, Light>() {
+    @Override
+    public String convertFieldValue(final Light object) {
+      return object == null ? "" : object.toString();
+    }
+    @Override
+    public Light convertModelValue(final String object) {
+      try {
+        return Light.parseString(object);
+      }
+      catch (final ParseException e) {
+        return null;
+      }
+    }
+  };
+  gridEditing.addEditor((ColumnConfig<Pet, String>)(_columnConfigMap.get("Pet.PetType")),
+                        converter, comboBox);
 }
 //--------------------------------------------------------------------------------------------------
 //@SuppressWarnings("unchecked")
