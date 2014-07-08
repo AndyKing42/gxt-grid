@@ -1,112 +1,124 @@
 package org.greatlogic.gxtgrid.client;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.sencha.gxt.core.client.IdentityValueProvider;
+import com.sencha.gxt.cell.core.client.form.CheckBoxCell;
 import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.event.CancelEditEvent;
+import com.sencha.gxt.widget.core.client.event.CancelEditEvent.CancelEditHandler;
 import com.sencha.gxt.widget.core.client.event.StartEditEvent;
 import com.sencha.gxt.widget.core.client.event.StartEditEvent.StartEditHandler;
+import com.sencha.gxt.widget.core.client.form.CheckBox;
+import com.sencha.gxt.widget.core.client.form.Field;
 import com.sencha.gxt.widget.core.client.form.TextField;
-import com.sencha.gxt.widget.core.client.grid.CheckBoxSelectionModel;
+import com.sencha.gxt.widget.core.client.grid.CellSelectionModel;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridView;
 import com.sencha.gxt.widget.core.client.grid.editing.GridRowEditing;
-import com.sencha.gxt.widget.core.client.info.DefaultInfoConfig;
-import com.sencha.gxt.widget.core.client.info.Info;
-import com.sencha.gxt.widget.core.client.info.InfoConfig;
 
 public class GXTGrid implements EntryPoint {
 //--------------------------------------------------------------------------------------------------
+private ListStore<Pet>   _listStore;
+private boolean          _petWasSelected;
+private TreeSet<Integer> _selectedPetIdSet;
+//--------------------------------------------------------------------------------------------------
 @Override
 public void onModuleLoad() {
-  final ListStore<Pet> listStore = new ListStore<>(new ModelKeyProvider<Pet>() {
+  _selectedPetIdSet = new TreeSet<>();
+  _listStore = new ListStore<>(new ModelKeyProvider<Pet>() {
     @Override
     public String getKey(final Pet pet) {
       return Integer.toString(pet.getPetId());
     }
   });
-  final IdentityValueProvider<Pet> ivp = new IdentityValueProvider<>();
-  final CheckBoxSelectionModel<Pet> sm = new CheckBoxSelectionModel<>(ivp);
+  final CellSelectionModel<Pet> sm = new CellSelectionModel<>();
   final ArrayList<ColumnConfig<Pet, ?>> ccList = new ArrayList<>();
-  ccList.add(sm.getColumn());
+  final ValueProvider<Pet, Boolean> selectValueProvider;
+  selectValueProvider = new ValueProvider<GXTGrid.Pet, Boolean>() {
+    @Override
+    public String getPath() {
+      return "SelectCheckBox";
+    }
+    @Override
+    public Boolean getValue(final Pet pet) {
+      return _selectedPetIdSet.contains(pet.getPetId());
+    }
+    @Override
+    public void setValue(final Pet pet, final Boolean selected) { //
+    }
+  };
+  final ColumnConfig<Pet, Boolean> cc0 = new ColumnConfig<>(selectValueProvider, 23, "");
+  final CheckBoxCell checkBoxCell = new CheckBoxCell() {
+    @Override
+    protected void onClick(final XElement parent, final NativeEvent event) {
+      super.onClick(parent, event);
+      final Pet pet = sm.getSelectedItem();
+      if (!_selectedPetIdSet.remove(pet.getPetId())) {
+        _selectedPetIdSet.add(pet.getPetId());
+      }
+    }
+  };
+  cc0.setCell(checkBoxCell);
+  cc0.setFixed(true);
+  cc0.setHideable(false);
+  cc0.setMenuDisabled(true);
+  cc0.setResizable(false);
+  cc0.setSortable(false);
+  ccList.add(cc0);
   final ColumnConfig<Pet, String> cc1;
   cc1 = new ColumnConfig<>(Pet.getPetNameValueProvider(), 100, "Name");
   ccList.add(cc1);
   final ColumnModel<Pet> columnModel = new ColumnModel<>(ccList);
-  final Grid<Pet> grid = new Grid<>(listStore, columnModel);
+  final Grid<Pet> grid = new Grid<>(_listStore, columnModel);
   grid.setSelectionModel(sm);
   grid.setView(new GridView<Pet>());
   final GridRowEditing<Pet> gre = new GridRowEditing<>(grid);
   gre.addStartEditHandler(new StartEditHandler<GXTGrid.Pet>() {
     @Override
     public void onStartEdit(final StartEditEvent<Pet> event) {
-      popup(30, "Start-ButtonBar:" + gre.getButtonBar().getElement());
-      Element element = gre.getButtonBar().getElement();
-      boolean widthFound = false;
-      while (!widthFound && element != null) {
-        element = element.getParentElement();
-        if (element != null) {
-          final String style = element.getAttribute("style");
-          widthFound = style.contains("width");
-        }
+      _petWasSelected = _selectedPetIdSet.contains(sm.getSelectedItem().getPetId());
+    }
+  });
+  gre.addCancelEditHandler(new CancelEditHandler<GXTGrid.Pet>() {
+    @Override
+    public void onCancelEdit(final CancelEditEvent<Pet> event) {
+      if (_petWasSelected) {
+        _selectedPetIdSet.add(sm.getSelectedItem().getPetId());
       }
-      if (element != null) {
-        element = element.getFirstChildElement();
-        if (element != null) {
-          element = element.getFirstChildElement();
-          if (element != null) {
-            element = element.getFirstChildElement();
-            if (element != null) {
-              element = element.getFirstChildElement();
-              if (element != null) {
-                element = element.getNextSiblingElement();
-                if (element != null) {
-                  element = element.getFirstChildElement();
-                  if (element != null) {
-                    element = element.getFirstChildElement();
-                    String style = element.getAttribute("style");
-                    final int widthIndex = style.indexOf("width: 17px");
-                    if (widthIndex > 0) {
-                      style = style.substring(0, widthIndex + 7) + "2" + //
-                              style.substring(widthIndex + 9);
-                      element.setAttribute("style", style);
-                      element.setInnerHTML("");
-                      //        <div class="gwt-Label GMFEK3RP5 GMFEK3ROJ GMFEK3RIK" style="margin: 0px;
-                      //width: 17px; left: 3px; top: 1px;">
-                      //org.greatlogic.gxtgrid.client.GXTGrid$Pet@5883969f</div>
-                      //0123456789
-                      popup(30, "Start-element:" + element);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+      else {
+        _selectedPetIdSet.remove(sm.getSelectedItem().getPetId());
       }
     }
   });
+  final Field<Boolean> checkBox = new CheckBox();
+  checkBox.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+    @Override
+    public void onValueChange(final ValueChangeEvent<Boolean> event) {
+      final Pet pet = sm.getSelectedItem();
+      if (!_selectedPetIdSet.remove(pet.getPetId())) {
+        _selectedPetIdSet.add(pet.getPetId());
+      }
+    }
+  });
+  gre.addEditor(cc0, checkBox);
   gre.addEditor(cc1, new TextField());
-  listStore.add(new Pet(1, "Lassie"));
-  listStore.add(new Pet(2, "Scooby"));
-  listStore.add(new Pet(3, "Snoopy"));
+  _listStore.add(new Pet(1, "Lassie"));
+  _listStore.add(new Pet(2, "Scooby"));
+  _listStore.add(new Pet(3, "Snoopy"));
   final ContentPanel contentPanel = new ContentPanel();
   contentPanel.add(grid);
   RootLayoutPanel.get().add(contentPanel);
-}
-//--------------------------------------------------------------------------------------------------
-private void popup(final int seconds, final String message) {
-  final InfoConfig infoConfig = new DefaultInfoConfig("", message);
-  infoConfig.setDisplay(seconds * 1000);
-  final Info info = new Info();
-  info.show(infoConfig);
 }
 //--------------------------------------------------------------------------------------------------
 private static class Pet {
