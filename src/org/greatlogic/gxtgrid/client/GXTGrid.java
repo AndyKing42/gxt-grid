@@ -11,6 +11,12 @@ import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
+import com.sencha.gxt.widget.core.client.box.ConfirmMessageBox;
+import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.event.DialogHideEvent;
+import com.sencha.gxt.widget.core.client.event.DialogHideEvent.DialogHideHandler;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.form.CheckBox;
 import com.sencha.gxt.widget.core.client.form.Field;
 import com.sencha.gxt.widget.core.client.form.TextField;
@@ -80,6 +86,27 @@ public void onModuleLoad() {
   petGrid.getView().setColumnLines(true);
   petGrid.getView().setStripeRows(true);
   final GridRowEditing<Pet> gridRowEditing = new GridRowEditing<>(petGrid);
+  final TextButton deleteButton = new TextButton("Delete");
+  deleteButton.addSelectHandler(new SelectEvent.SelectHandler() {
+    @Override
+    public void onSelect(final SelectEvent event) {
+      final Pet pet = selectionModel.getSelectedItem();
+      final ConfirmMessageBox messageBox;
+      messageBox = new ConfirmMessageBox("Delete Row", //
+                                         "Are you sure you want to delete " + pet._petName + "?");
+      messageBox.addDialogHideHandler(new DialogHideHandler() {
+        @Override
+        public void onDialogHide(final DialogHideEvent hideEvent) {
+          if (hideEvent.getHideButton() == PredefinedButton.YES) {
+            _petListStore.remove(pet);
+            gridRowEditing.cancelEditing();
+          }
+        }
+      });
+      messageBox.show();
+    }
+  });
+  gridRowEditing.getButtonBar().add(deleteButton);
   final Field<Boolean> checkBox = new CheckBox();
   checkBox.setEnabled(false);
   gridRowEditing.addEditor(selectColumnConfig, checkBox);
