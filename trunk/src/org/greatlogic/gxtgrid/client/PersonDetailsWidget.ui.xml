@@ -1,0 +1,60 @@
+<!DOCTYPE ui:UiBinder SYSTEM 'http://dl.google.com/gwt/DTD/xhtml.ent'>
+<ui:UiBinder
+  xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+  xmlns:gxtbutton='urn:import:com.sencha.gxt.widget.core.client.button'
+  xmlns:gxtcontainer='urn:import:com.sencha.gxt.widget.core.client.container'
+  xmlns:gxtform='urn:import:com.sencha.gxt.widget.core.client.form'
+  xmlns:gxt='urn:import:com.sencha.gxt.widget.core.client'
+  xmlns:ui='urn:ui:com.google.gwt.uibinder'
+>
+  <!-- VerticalLayoutData declarations ========================================================= -->
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData'
+    field='fillRemainingLayoutData'
+  >
+    <ui:attributes
+      height='1'
+      width='1'/>
+  </ui:with>
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData'
+    field='sizeToContentsLayoutData'
+  >
+    <ui:attributes
+      height='-1'
+      width='1'/>
+  </ui:with>
+  <!-- ========================================================================================= -->
+  <gxtcontainer:Viewport>
+    <gxtcontainer:VerticalLayoutContainer>
+      <gxtcontainer:child layoutData='{sizeToContentsLayoutData}'>
+        <gxtcontainer:HorizontalLayoutContainer>
+          <gxtcontainer:VerticalLayoutContainer>
+            <gxtform:FieldLabel text='Person.FirstName'/>
+          </gxtcontainer:VerticalLayoutContainer>
+          <gxtcontainer:VerticalLayoutContainer>
+            <gxtform:FieldLabel text='Person.EmailAddress'/>
+          </gxtcontainer:VerticalLayoutContainer>
+        </gxtcontainer:HorizontalLayoutContainer>
+      </gxtcontainer:child>
+      <gxtcontainer:child layoutData='{sizeToContentsLayoutData}'>
+        <gxtcontainer:HorizontalLayoutContainer>
+          <gxtbutton:TextButton text='Save Changes'/>
+          <gxtbutton:TextButton text='Undo Changes'/>
+        </gxtcontainer:HorizontalLayoutContainer>
+      </gxtcontainer:child>
+      <gxtcontainer:child layoutData='{fillRemainingLayoutData}'>
+        <gxtcontainer:HorizontalLayoutContainer>
+          <gxtcontainer:VerticalLayoutContainer>
+            <gxtbutton:TextButton text='Organizations'/>
+            <gxtbutton:TextButton text='Relationships'/>
+          </gxtcontainer:VerticalLayoutContainer>
+          <gxtcontainer:CardLayoutContainer>
+            <gxt:ContentPanel headerVisible='false'/>
+            <gxt:ContentPanel headerVisible='false'/>
+          </gxtcontainer:CardLayoutContainer>
+        </gxtcontainer:HorizontalLayoutContainer>
+      </gxtcontainer:child>
+    </gxtcontainer:VerticalLayoutContainer>
+  </gxtcontainer:Viewport>
+</ui:UiBinder>
