@@ -14,7 +14,9 @@
           <gxtform:FieldLabel text='Person.FirstName'/>
         </gxtcontainer:VBoxLayoutContainer>
         <gxtcontainer:VBoxLayoutContainer>
-          <gxtform:FieldLabel text='Person.EmailAddress'/>
+          <gxtform:FieldLabel
+            text='Person.EmailAddress'
+            width="200"/>
         </gxtcontainer:VBoxLayoutContainer>
       </gxtcontainer:HBoxLayoutContainer>
       <gxtcontainer:HBoxLayoutContainer>
