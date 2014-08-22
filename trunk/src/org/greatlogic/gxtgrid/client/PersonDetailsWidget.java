@@ -14,10 +14,20 @@ package org.greatlogic.gxtgrid.client;
  */
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
 
 public class PersonDetailsWidget extends Composite {
+//--------------------------------------------------------------------------------------------------
+@UiField
+HBoxLayoutContainer hblc1;
+@UiField
+VBoxLayoutContainer mainVBLC;
 //==================================================================================================
 interface PersonDetailsWidgetUiBinder extends UiBinder<Widget, PersonDetailsWidget> { //
 }
@@ -25,6 +35,17 @@ interface PersonDetailsWidgetUiBinder extends UiBinder<Widget, PersonDetailsWidg
 public PersonDetailsWidget() {
   final PersonDetailsWidgetUiBinder uiBinder = GWT.create(PersonDetailsWidgetUiBinder.class);
   initWidget(uiBinder.createAndBindUi(this));
+}
+//--------------------------------------------------------------------------------------------------
+@UiHandler({"saveChangesButton"})
+public void onSaveButtonSelect(@SuppressWarnings("unused") final SelectEvent event) {
+  final int height = hblc1.getOffsetHeight();
+  final int width = hblc1.getOffsetWidth();
+  if (height < 0 || width < 0) {
+    mainVBLC = null;
+  }
+  //  hblc1.setWidth(500);
+  mainVBLC.forceLayout();
 }
 //--------------------------------------------------------------------------------------------------
 }
