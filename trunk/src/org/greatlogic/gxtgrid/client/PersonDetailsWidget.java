@@ -34,6 +34,9 @@ import com.sencha.gxt.widget.core.client.container.CardLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.DialogHideEvent;
 import com.sencha.gxt.widget.core.client.event.DialogHideEvent.DialogHideHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.form.CheckBox;
+import com.sencha.gxt.widget.core.client.form.Field;
+import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.grid.CellSelectionModel;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -63,18 +66,20 @@ public PersonDetailsWidget() {
 }
 //--------------------------------------------------------------------------------------------------
 private void createGrid() {
+  _selectedPetIdSet = new TreeSet<>();
   final CellSelectionModel<Pet> selectionModel = new CellSelectionModel<>();
   _petGrid = new Grid<Pet>(createListStore(), createGridColumnModel(selectionModel));
   _petGrid.setSelectionModel(selectionModel);
   _petGrid.setView(new GridView<Pet>());
   _petGrid.getView().setColumnLines(true);
   _petGrid.getView().setStripeRows(true);
-  //  final GridRowEditing<Pet> gridRowEditing = new GridRowEditing<>(_petGrid);
-  //  gridRowEditing.getButtonBar().add(createGridDeleteButton(selectionModel, gridRowEditing));
-  //  final Field<Boolean> checkBox = new CheckBox();
-  //  checkBox.setEnabled(false);
-  //  gridRowEditing.addEditor(_selectColumnConfig, checkBox);
-  //  gridRowEditing.addEditor(_petNameColumnConfig, new TextField());
+  final GridRowEditing<Pet> gridRowEditing = new GridRowEditing<>(_petGrid);
+  gridRowEditing.getButtonBar().add(createGridDeleteButton(selectionModel, gridRowEditing));
+  final Field<Boolean> checkBox = new CheckBox();
+  checkBox.setEnabled(false);
+  gridRowEditing.addEditor(_selectColumnConfig, checkBox);
+  gridRowEditing.addEditor(_petNameColumnConfig, new TextField());
+  cardLayoutContainer.forceLayout();
 }
 //--------------------------------------------------------------------------------------------------
 private ColumnModel<Pet> createGridColumnModel(final CellSelectionModel<Pet> selectionModel) {
