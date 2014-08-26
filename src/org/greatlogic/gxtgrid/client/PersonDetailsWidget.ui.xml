@@ -6,66 +6,111 @@
   xmlns:gxtform='urn:import:com.sencha.gxt.widget.core.client.form'
   xmlns:gxt='urn:import:com.sencha.gxt.widget.core.client'
   xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <!-- HorizontalLayoutData declarations ======================================================= -->
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData'
+    field='fillRemainingHLD'>
+    <ui:attributes
+      height='1'
+      width='1'/>
+  </ui:with>
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData'
+    field='sizeToContentsHLD'>
+    <ui:attributes
+      height='-1'
+      width='1'/>
+  </ui:with>
+  <!-- VerticalLayoutData declarations ========================================================= -->
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData'
+    field='fillRemainingVLD'>
+    <ui:attributes
+      height='1'
+      width='1'/>
+  </ui:with>
+  <ui:with
+    type='com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData'
+    field='sizeToContentsVLD'>
+    <ui:attributes
+      height='-1'
+      width='1'/>
+  </ui:with>
   <!-- ========================================================================================= -->
   <gxtcontainer:Viewport>
     <gxtcontainer:VerticalLayoutContainer>
-      <gxtcontainer:HBoxLayoutContainer>
-        <gxtcontainer:VerticalLayoutContainer>
-          <gxtform:FieldLabel
-            labelAlign='TOP'
-            text='Person.FirstName'>
-            <gxtform:widget>
-              <gxtform:TextField/>
-            </gxtform:widget>
-          </gxtform:FieldLabel>
-          <gxtform:FieldLabel
-            labelAlign='TOP'
-            text='Person.LastName'>
-            <gxtform:widget>
-              <gxtform:TextField/>
-            </gxtform:widget>
-          </gxtform:FieldLabel>
-          <gxtform:FieldLabel
-            labelAlign='TOP'
-            text='Person.DisplayName'>
-            <gxtform:widget>
-              <gxtform:TextField/>
-            </gxtform:widget>
-          </gxtform:FieldLabel>
-        </gxtcontainer:VerticalLayoutContainer>
-        <gxtcontainer:VerticalLayoutContainer>
-          <gxtform:FieldLabel
-            labelAlign='TOP'
-            text='Person.EmailAddress'>
-            <gxtform:widget>
-              <gxtform:TextField/>
-            </gxtform:widget>
-          </gxtform:FieldLabel>
-          <gxtform:FieldLabel
-            labelAlign='TOP'
-            text='Person.PhoneNumberHome'>
-            <gxtform:widget>
-              <gxtform:TextField/>
-            </gxtform:widget>
-          </gxtform:FieldLabel>
-        </gxtcontainer:VerticalLayoutContainer>
-      </gxtcontainer:HBoxLayoutContainer>
-      <gxtcontainer:HBoxLayoutContainer>
-        <gxtbutton:TextButton text='Save Changes'/>
-        <gxtbutton:TextButton text='Undo Changes'/>
-      </gxtcontainer:HBoxLayoutContainer>
-      <gxtcontainer:HBoxLayoutContainer>
-        <gxtcontainer:VBoxLayoutContainer
-          ui:field='cardButtonsContainer'
-          vBoxLayoutAlign='STRETCHMAX'>
-          <gxtbutton:TextButton ui:field='petsButton' text='Pets'/>
-          <gxtbutton:TextButton text='Relationships'/>
-        </gxtcontainer:VBoxLayoutContainer>
-        <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'>
-          <gxt:ContentPanel ui:field='petGridPanel' headerVisible='false'/>
-          <gxt:ContentPanel headerVisible='false'/>
-        </gxtcontainer:CardLayoutContainer>
-      </gxtcontainer:HBoxLayoutContainer>
+      <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
+        <gxtcontainer:HBoxLayoutContainer>
+          <gxtcontainer:VerticalLayoutContainer>
+            <gxtform:FieldLabel
+              labelAlign='TOP'
+              text='Person.FirstName'>
+              <gxtform:widget>
+                <gxtform:TextField/>
+              </gxtform:widget>
+            </gxtform:FieldLabel>
+            <gxtform:FieldLabel
+              labelAlign='TOP'
+              text='Person.LastName'>
+              <gxtform:widget>
+                <gxtform:TextField/>
+              </gxtform:widget>
+            </gxtform:FieldLabel>
+            <gxtform:FieldLabel
+              labelAlign='TOP'
+              text='Person.DisplayName'>
+              <gxtform:widget>
+                <gxtform:TextField/>
+              </gxtform:widget>
+            </gxtform:FieldLabel>
+          </gxtcontainer:VerticalLayoutContainer>
+          <gxtcontainer:VerticalLayoutContainer>
+            <gxtform:FieldLabel
+              labelAlign='TOP'
+              text='Person.EmailAddress'>
+              <gxtform:widget>
+                <gxtform:TextField/>
+              </gxtform:widget>
+            </gxtform:FieldLabel>
+            <gxtform:FieldLabel
+              labelAlign='TOP'
+              text='Person.PhoneNumberHome'>
+              <gxtform:widget>
+                <gxtform:TextField/>
+              </gxtform:widget>
+            </gxtform:FieldLabel>
+          </gxtcontainer:VerticalLayoutContainer>
+        </gxtcontainer:HBoxLayoutContainer>
+      </gxtcontainer:child>
+      <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
+        <gxtcontainer:HBoxLayoutContainer>
+          <gxtbutton:TextButton text='Save Changes'/>
+          <gxtbutton:TextButton text='Undo Changes'/>
+        </gxtcontainer:HBoxLayoutContainer>
+      </gxtcontainer:child>
+      <gxtcontainer:child layoutData='{fillRemainingVLD}'>
+        <gxtcontainer:HorizontalLayoutContainer>
+          <gxtcontainer:VBoxLayoutContainer
+            ui:field='cardButtonsContainer'
+            vBoxLayoutAlign='STRETCHMAX'>
+            <gxtbutton:TextButton
+              ui:field='petsButton'
+              text='Pets'/>
+            <gxtbutton:TextButton text='Relationships'/>
+          </gxtcontainer:VBoxLayoutContainer>
+          <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'>
+            <gxt:ContentPanel
+              ui:field='petGridPanel'
+              headerVisible='false'/>
+            <gxt:ContentPanel headerVisible='false'/>
+          </gxtcontainer:CardLayoutContainer>
+        </gxtcontainer:HorizontalLayoutContainer>
+      </gxtcontainer:child>
+      <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
+        <gxtcontainer:HBoxLayoutContainer>
+          <gxtbutton:TextButton text='Last Button'/>
+        </gxtcontainer:HBoxLayoutContainer>
+      </gxtcontainer:child>
     </gxtcontainer:VerticalLayoutContainer>
   </gxtcontainer:Viewport>
 </ui:UiBinder>

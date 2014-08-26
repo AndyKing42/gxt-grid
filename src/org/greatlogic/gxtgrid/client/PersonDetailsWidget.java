@@ -79,7 +79,6 @@ private void createGrid() {
   checkBox.setEnabled(false);
   gridRowEditing.addEditor(_selectColumnConfig, checkBox);
   gridRowEditing.addEditor(_petNameColumnConfig, new TextField());
-  cardLayoutContainer.forceLayout();
 }
 //--------------------------------------------------------------------------------------------------
 private ColumnModel<Pet> createGridColumnModel(final CellSelectionModel<Pet> selectionModel) {
