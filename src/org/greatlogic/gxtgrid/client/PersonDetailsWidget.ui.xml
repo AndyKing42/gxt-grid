@@ -58,11 +58,11 @@
         <gxtcontainer:VBoxLayoutContainer
           ui:field='cardButtonsContainer'
           vBoxLayoutAlign='STRETCHMAX'>
-          <gxtbutton:TextButton text='Organizations'/>
+          <gxtbutton:TextButton ui:field='petsButton' text='Pets'/>
           <gxtbutton:TextButton text='Relationships'/>
         </gxtcontainer:VBoxLayoutContainer>
         <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'>
-          <gxt:ContentPanel headerVisible='false'/>
+          <gxt:ContentPanel ui:field='petGridPanel' headerVisible='false'/>
           <gxt:ContentPanel headerVisible='false'/>
         </gxtcontainer:CardLayoutContainer>
       </gxtcontainer:HBoxLayoutContainer>
