@@ -90,20 +90,23 @@
       </gxtcontainer:child>
       <gxtcontainer:child layoutData='{fillRemainingVLD}'>
         <gxtcontainer:HorizontalLayoutContainer>
-          <gxtcontainer:VBoxLayoutContainer
-            ui:field='cardButtonsContainer'
-            vBoxLayoutAlign='STRETCHMAX'>
-            <gxtbutton:TextButton
-              ui:field='petsButton'
-              text='Pets'/>
-            <gxtbutton:TextButton text='Relationships'/>
-          </gxtcontainer:VBoxLayoutContainer>
-          <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'>
+          <gxtcontainer:child layoutData='{sizeToContentsHLD}'>
+            <gxtcontainer:VBoxLayoutContainer
+              ui:field='cardButtonsContainer'
+              vBoxLayoutAlign='STRETCHMAX'>
+              <gxtbutton:TextButton
+                ui:field='petsButton'
+                text='Pets'/>
+              <gxtbutton:TextButton text='Relationships'/>
+            </gxtcontainer:VBoxLayoutContainer>
+          </gxtcontainer:child>
+          <!-- <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'> -->
+          <gxtcontainer:child layoutData='{fillRemainingHLD}'>
             <gxt:ContentPanel
               ui:field='petGridPanel'
               headerVisible='false'/>
-            <gxt:ContentPanel headerVisible='false'/>
-          </gxtcontainer:CardLayoutContainer>
+          </gxtcontainer:child>
+          <!-- </gxtcontainer:CardLayoutContainer> -->
         </gxtcontainer:HorizontalLayoutContainer>
       </gxtcontainer:child>
       <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
