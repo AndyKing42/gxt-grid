@@ -30,7 +30,6 @@ import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
 import com.sencha.gxt.widget.core.client.box.ConfirmMessageBox;
 import com.sencha.gxt.widget.core.client.button.TextButton;
-import com.sencha.gxt.widget.core.client.container.CardLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.DialogHideEvent;
 import com.sencha.gxt.widget.core.client.event.DialogHideEvent.DialogHideHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
@@ -46,8 +45,8 @@ import com.sencha.gxt.widget.core.client.grid.editing.GridRowEditing;
 
 public class PersonDetailsWidget extends Composite {
 //--------------------------------------------------------------------------------------------------
-@UiField
-CardLayoutContainer                cardLayoutContainer;
+//@UiField
+//CardLayoutContainer                cardLayoutContainer;
 @UiField
 ContentPanel                       petGridPanel;
 
@@ -165,7 +164,7 @@ private ListStore<Pet> createListStore() {
 public void onPetsButtonSelect(@SuppressWarnings("unused") final SelectEvent event) {
   createGrid();
   petGridPanel.setWidget(_petGrid);
-  cardLayoutContainer.setActiveWidget(petGridPanel);
+  //  cardLayoutContainer.setActiveWidget(petGridPanel);
 }
 //==================================================================================================
 private static class Pet {
