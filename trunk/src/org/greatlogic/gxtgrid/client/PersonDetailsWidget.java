@@ -45,8 +45,6 @@ import com.sencha.gxt.widget.core.client.grid.editing.GridRowEditing;
 
 public class PersonDetailsWidget extends Composite {
 //--------------------------------------------------------------------------------------------------
-//@UiField
-//CardLayoutContainer                cardLayoutContainer;
 @UiField
 ContentPanel                       petGridPanel;
 
@@ -164,7 +162,6 @@ private ListStore<Pet> createListStore() {
 public void onPetsButtonSelect(@SuppressWarnings("unused") final SelectEvent event) {
   createGrid();
   petGridPanel.setWidget(_petGrid);
-  //  cardLayoutContainer.setActiveWidget(petGridPanel);
 }
 //==================================================================================================
 private static class Pet {

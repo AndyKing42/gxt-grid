@@ -100,13 +100,11 @@
               <gxtbutton:TextButton text='Relationships'/>
             </gxtcontainer:VBoxLayoutContainer>
           </gxtcontainer:child>
-          <!-- <gxtcontainer:CardLayoutContainer ui:field='cardLayoutContainer'> -->
           <gxtcontainer:child layoutData='{fillRemainingHLD}'>
             <gxt:ContentPanel
               ui:field='petGridPanel'
               headerVisible='false'/>
           </gxtcontainer:child>
-          <!-- </gxtcontainer:CardLayoutContainer> -->
         </gxtcontainer:HorizontalLayoutContainer>
       </gxtcontainer:child>
       <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
