@@ -101,9 +101,19 @@
             </gxtcontainer:VBoxLayoutContainer>
           </gxtcontainer:child>
           <gxtcontainer:child layoutData='{fillRemainingHLD}'>
-            <gxt:ContentPanel
-              ui:field='petGridPanel'
-              headerVisible='false'/>
+            <gxtcontainer:VerticalLayoutContainer>
+              <gxtcontainer:child layoutData='{fillRemainingVLD}'>
+                <gxt:ContentPanel
+                  ui:field='petGridPanel'
+                  headerVisible='false'/>
+              </gxtcontainer:child>
+              <gxtcontainer:child layoutData='{sizeToContentsVLD}'>
+                <gxtcontainer:HBoxLayoutContainer>
+                  <gxtbutton:TextButton text='Save Changes'/>
+                  <gxtbutton:TextButton text='Undo Changes'/>
+                </gxtcontainer:HBoxLayoutContainer>
+              </gxtcontainer:child>
+            </gxtcontainer:VerticalLayoutContainer>
           </gxtcontainer:child>
         </gxtcontainer:HorizontalLayoutContainer>
       </gxtcontainer:child>
