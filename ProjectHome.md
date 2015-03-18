@@ -1,0 +1,1 @@
+A demonstration of some of the features of the Sencha GXT grid.
